@@ -1,0 +1,5 @@
+{
+  "name": "Roleplay OS",
+  "description": "A mobile-like roleplay interface with lock screen, character management, and app creation.",
+  "requestFramePermissions": []
+}
