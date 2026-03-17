@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+@theme {
+  --color-primary: #F9C6D4;
+  --color-primary-soft: #F3B4C2;
+  --color-bg-main: #FAF9F6;
+  --color-bg-card: #FFFFFF;
+  --color-soft-1: #E6DDD8;
+  --color-soft-2: #E3DBD7;
+  --color-soft-3: #ECE8E6;
+  --color-soft-4: #EFE7E6;
+  --color-pink-1: #EACFD5;
+  --color-pink-2: #E6CFD2;
+  --color-pink-3: #E2CBD2;
+}
+
 @layer utilities {
   .scrollbar-hide {
     /* IE and Edge */

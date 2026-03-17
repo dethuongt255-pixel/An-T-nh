@@ -14,6 +14,46 @@ export interface Character {
   relatedNPCs?: string;
   unrelatedNPCs?: string;
   userProfile?: string;
+  // New fields for the character OS
+  socialProfile?: SocialProfile;
+  socialPosts?: SocialPost[];
+  chatMessages?: { role: 'user' | 'assistant' | 'system', content: string }[];
+  chatSettings?: ChatSettings;
+  memory?: string;
+  tokenCount?: number;
+}
+
+export interface SocialProfile {
+  cover: string;
+  username: string;
+  bio: string;
+  location: string;
+  joinedDate: string;
+  followers: number;
+  following: number;
+}
+
+export interface SocialPost {
+  id: string;
+  content: string;
+  time: string;
+  likes: number;
+  comments: SocialComment[];
+}
+
+export interface SocialComment {
+  id: string;
+  author: string;
+  avatar: string;
+  content: string;
+}
+
+export interface ChatSettings {
+  background: string;
+  offlineLength: number;
+  onlineLength: number;
+  memoryMessageCount: number;
+  memoryTokenCount: number;
 }
 
 export interface AppItem {
@@ -23,6 +63,9 @@ export interface AppItem {
   description: string;
   time: string;
   badge: number;
+  functions?: string;
+  content?: string;
+  messages?: { role: 'user' | 'assistant', content: string }[];
 }
 
 export interface UserProfile {
@@ -62,6 +105,14 @@ export interface NovelCharacter {
   info: string;
 }
 
+export interface Chapter {
+  id: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  background?: string;
+}
+
 export interface Novel {
   id: string;
   title: string;
@@ -76,6 +127,22 @@ export interface Novel {
   char2: NovelCharacter;
   plot: string;
   content: string;
+  chapters: Chapter[];
+  memoryLimit: number;
+}
+
+export interface NPC {
+  id: string;
+  name: string;
+  avatar: string;
+  cover: string;
+  personality: string;
+  speechStyle: string;
+  bio: string;
+  lastMessage: string;
+  time: string;
+  badge: number;
+  apps?: AppItem[];
 }
 
 export interface AppState {
@@ -83,8 +150,12 @@ export interface AppState {
   setThemeColor: (color: string) => void;
   characters: Character[];
   addCharacter: (char: Character) => void;
+  updateCharacter: (id: string, updates: Partial<Character>) => void;
+  deleteCharacter: (id: string) => void;
   apps: AppItem[];
   addApp: (app: AppItem) => void;
+  updateApp: (id: string, updates: Partial<AppItem>) => void;
+  deleteApp: (id: string) => void;
   profile: UserProfile;
   updateProfile: (profile: Partial<UserProfile>) => void;
   apiSettings: ApiSettings;
@@ -97,6 +168,10 @@ export interface AppState {
   addNovel: (novel: Novel) => void;
   updateNovel: (id: string, updates: Partial<Novel>) => void;
   deleteNovel: (id: string) => void;
+  npcs: NPC[];
+  addNpc: (npc: NPC) => void;
+  updateNpc: (id: string, updates: Partial<NPC>) => void;
+  deleteNpc: (id: string) => void;
   screen2Bg: string;
   setScreen2Bg: (bg: string) => void;
   isSwipingDisabled: boolean;

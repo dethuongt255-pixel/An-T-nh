@@ -1,22 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, Image as ImageIcon, User, Bot } from 'lucide-react';
+import { Plus, X, Image as ImageIcon, User, Bot, Edit, Trash2 } from 'lucide-react';
 import { useAppContext } from '../context';
 import { Character } from '../types';
 import { compressImage } from '../utils/image';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { CharacterOS } from './CharacterOS';
 
 export const Screen2: React.FC = () => {
-  const { themeColor, characters, addCharacter, screen2Bg, setScreen2Bg, setIsSwipingDisabled } = useAppContext();
+  const { themeColor, characters, addCharacter, updateCharacter, deleteCharacter, screen2Bg, setScreen2Bg, setIsSwipingDisabled } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useLocalStorage('rp_s2_isModalOpen', false);
+  const [selectedCharId, setSelectedCharId] = useLocalStorage<string | null>('rp_s2_selectedCharId', null);
+  const [editingCharId, setEditingCharId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isModalOpen) {
+    if (isModalOpen || selectedCharId) {
       setIsSwipingDisabled(true);
     } else {
       setIsSwipingDisabled(false);
     }
     return () => setIsSwipingDisabled(false);
-  }, [isModalOpen, setIsSwipingDisabled]);
+  }, [isModalOpen, selectedCharId, setIsSwipingDisabled]);
 
   const [newChar, setNewChar] = useLocalStorage<Partial<Character>>('rp_s2_newChar', {
     name: '',
@@ -40,7 +43,7 @@ export const Screen2: React.FC = () => {
     if (!newChar.name || !newChar.image) return;
     
     const char: Character = {
-      id: Date.now().toString(),
+      id: editingCharId || Date.now().toString(),
       name: newChar.name,
       username: newChar.username || `@${newChar.name.toLowerCase().replace(/\s+/g, '')}`,
       description: newChar.description || '',
@@ -57,14 +60,35 @@ export const Screen2: React.FC = () => {
       userProfile: newChar.userProfile
     };
     
-    addCharacter(char);
+    if (editingCharId) {
+      updateCharacter(editingCharId, char);
+    } else {
+      addCharacter(char);
+    }
+    
     setIsModalOpen(false);
+    setEditingCharId(null);
     // Reset completely
     setNewChar({ 
       name: '', username: '', description: '', image: '', tags: [], type: 'bot',
       profile: '', personality: '', firstMessage: '', relationship: '', advancedPrompt: '', relatedNPCs: '', unrelatedNPCs: '', userProfile: ''
     });
     setTagsInput('');
+  };
+
+  const handleEdit = (char: Character, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setNewChar(char);
+    setTagsInput(char.tags.join(', '));
+    setEditingCharId(char.id);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm('Bạn có chắc chắn muốn xóa nhân vật này?')) {
+      deleteCharacter(id);
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,7 +125,25 @@ export const Screen2: React.FC = () => {
         
         <div className="grid grid-cols-2 gap-[20px]">
           {characters.map(char => (
-            <div key={char.id} className="bg-[#FFFFFF] rounded-[16px] overflow-hidden shadow-sm flex flex-col h-[420px]">
+            <div 
+              key={char.id} 
+              onClick={() => setSelectedCharId(char.id)}
+              className="bg-[#FFFFFF] rounded-[16px] overflow-hidden shadow-sm flex flex-col h-[420px] cursor-pointer hover:shadow-md transition-shadow relative group"
+            >
+              <div className="absolute top-2 left-2 z-10 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button 
+                  onClick={(e) => handleEdit(char, e)}
+                  className="w-8 h-8 bg-white/80 backdrop-blur rounded-full flex items-center justify-center text-blue-500 hover:bg-white shadow-sm"
+                >
+                  <Edit size={16} />
+                </button>
+                <button 
+                  onClick={(e) => handleDelete(char.id, e)}
+                  className="w-8 h-8 bg-white/80 backdrop-blur rounded-full flex items-center justify-center text-red-500 hover:bg-white shadow-sm"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
               <div className="w-full aspect-[4/3] shrink-0 relative">
                 <img 
                   src={char.image} 
@@ -161,7 +203,15 @@ export const Screen2: React.FC = () => {
         <div className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-[#FAF9F6] rounded-[24px] w-full max-w-md p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto border border-[#E6CFD2]">
             <button 
-              onClick={() => setIsModalOpen(false)}
+              onClick={() => {
+                setIsModalOpen(false);
+                setEditingCharId(null);
+                setNewChar({ 
+                  name: '', username: '', description: '', image: '', tags: [], type: 'bot',
+                  profile: '', personality: '', firstMessage: '', relationship: '', advancedPrompt: '', relatedNPCs: '', unrelatedNPCs: '', userProfile: ''
+                });
+                setTagsInput('');
+              }}
               className="absolute top-4 right-4 text-gray-400 hover:text-[#F3B4C2] z-10"
             >
               <X size={24} />
@@ -367,6 +417,14 @@ export const Screen2: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Character OS */}
+      {selectedCharId && (
+        <CharacterOS 
+          characterId={selectedCharId} 
+          onClose={() => setSelectedCharId(null)} 
+        />
       )}
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { AppState, Character, AppItem, UserProfile, ApiSettings, ApiPreset, Novel } from './types';
+import { AppState, Character, AppItem, UserProfile, ApiSettings, ApiPreset, Novel, NPC } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
 
 const defaultContext: AppState = {
@@ -7,8 +7,12 @@ const defaultContext: AppState = {
   setThemeColor: () => {},
   characters: [],
   addCharacter: () => {},
+  updateCharacter: () => {},
+  deleteCharacter: () => {},
   apps: [],
   addApp: () => {},
+  updateApp: () => {},
+  deleteApp: () => {},
   profile: {
     avatar: 'https://i.pravatar.cc/150?img=32',
     cover: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=1000&auto=format&fit=crop',
@@ -29,6 +33,10 @@ const defaultContext: AppState = {
   addNovel: () => {},
   updateNovel: () => {},
   deleteNovel: () => {},
+  npcs: [],
+  addNpc: () => {},
+  updateNpc: () => {},
+  deleteNpc: () => {},
   screen2Bg: '',
   setScreen2Bg: () => {},
   isSwipingDisabled: false,
@@ -45,6 +53,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [apiSettings, setApiSettings] = useLocalStorage<ApiSettings>('rp_apiSettings', defaultContext.apiSettings);
   const [apiPresets, setApiPresets] = useLocalStorage<ApiPreset[]>('rp_apiPresets', []);
   const [novels, setNovels] = useLocalStorage<Novel[]>('rp_novels', []);
+  const [npcs, setNpcs] = useLocalStorage<NPC[]>('rp_npcs', []);
   const [screen2Bg, setScreen2Bg] = useLocalStorage<string>('rp_screen2Bg', '');
   const [isSwipingDisabled, setIsSwipingDisabled] = useState(false);
 
@@ -52,8 +61,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCharacters(prev => [char, ...prev]);
   };
 
+  const updateCharacter = (id: string, updates: Partial<Character>) => {
+    setCharacters(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
+  };
+
+  const deleteCharacter = (id: string) => {
+    setCharacters(prev => prev.filter(c => c.id !== id));
+  };
+
   const addApp = (app: AppItem) => {
     setApps(prev => [app, ...prev]);
+  };
+
+  const updateApp = (id: string, updates: Partial<AppItem>) => {
+    setApps(prev => prev.map(a => a.id === id ? { ...a, ...updates } : a));
+  };
+
+  const deleteApp = (id: string) => {
+    setApps(prev => prev.filter(a => a.id !== id));
   };
 
   const updateProfile = (updates: Partial<UserProfile>) => {
@@ -95,6 +120,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setNovels(prev => prev.filter(n => n.id !== id));
   };
 
+  const addNpc = (npc: NPC) => {
+    setNpcs(prev => [npc, ...prev]);
+  };
+
+  const updateNpc = (id: string, updates: Partial<NPC>) => {
+    setNpcs(prev => prev.map(n => n.id === id ? { ...n, ...updates } : n));
+  };
+
+  const deleteNpc = (id: string) => {
+    setNpcs(prev => prev.filter(n => n.id !== id));
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -102,8 +139,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setThemeColor,
         characters,
         addCharacter,
+        updateCharacter,
+        deleteCharacter,
         apps,
         addApp,
+        updateApp,
+        deleteApp,
         profile,
         updateProfile,
         apiSettings,
@@ -116,6 +157,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addNovel,
         updateNovel,
         deleteNovel,
+        npcs,
+        addNpc,
+        updateNpc,
+        deleteNpc,
         screen2Bg,
         setScreen2Bg,
         isSwipingDisabled,
