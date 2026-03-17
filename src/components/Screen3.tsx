@@ -1,13 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, X, Image as ImageIcon, Camera } from 'lucide-react';
 import { useAppContext } from '../context';
 import { AppItem } from '../types';
+import { compressImage } from '../utils/image';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 export const Screen3: React.FC = () => {
-  const { themeColor, apps, addApp, profile, updateProfile } = useAppContext();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { themeColor, apps, addApp, profile, updateProfile, setIsSwipingDisabled } = useAppContext();
+  const [isModalOpen, setIsModalOpen] = useLocalStorage('rp_s3_isModalOpen', false);
+
+  useEffect(() => {
+    if (isModalOpen) {
+      setIsSwipingDisabled(true);
+    } else {
+      setIsSwipingDisabled(false);
+    }
+    return () => setIsSwipingDisabled(false);
+  }, [isModalOpen, setIsSwipingDisabled]);
+
   const [isCreating, setIsCreating] = useState(false);
-  const [newApp, setNewApp] = useState({
+  const [newApp, setNewApp] = useLocalStorage('rp_s3_newApp', {
     name: '',
     avatar: '',
     description: '',
@@ -41,21 +53,23 @@ export const Screen3: React.FC = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'cover' | 'background' | 'appAvatar') => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      if (type === 'appAvatar') {
-        setNewApp(prev => ({ ...prev, avatar: url }));
-      } else {
-        updateProfile({ [type]: url });
-      }
+      compressImage(file, (base64) => {
+        if (type === 'appAvatar') {
+          setNewApp(prev => ({ ...prev, avatar: base64 }));
+        } else {
+          updateProfile({ [type]: base64 });
+        }
+      });
     }
   };
 
   return (
-    <div 
-      className="w-full h-full relative overflow-y-auto overflow-x-hidden shrink-0 snap-center pb-24"
-      style={{ backgroundColor: profile.background || themeColor }}
-    >
-      {/* Profile Header */}
+    <div className="w-full h-full relative shrink-0 snap-center">
+      <div 
+        className="w-full h-full overflow-y-auto overflow-x-hidden pb-24"
+        style={{ backgroundColor: profile.background || themeColor }}
+      >
+        {/* Profile Header */}
       <div className="relative h-64 w-full bg-gray-200 group">
         <img 
           src={profile.cover} 
@@ -118,18 +132,19 @@ export const Screen3: React.FC = () => {
           )}
         </div>
       </div>
+    </div>
 
-      {/* FAB */}
+    {/* FAB */}
       <button 
         onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-white shadow-xl flex items-center justify-center text-pink-500 hover:scale-105 transition-transform z-10"
+        className="absolute bottom-6 right-6 w-14 h-14 rounded-full bg-white shadow-xl flex items-center justify-center text-pink-500 hover:scale-105 transition-transform z-10"
       >
         <Plus size={24} />
       </button>
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             {!isCreating && (
               <button 

@@ -5,6 +5,15 @@ export interface Character {
   description: string;
   image: string;
   tags: string[];
+  type?: 'bot' | 'user';
+  profile?: string;
+  personality?: string;
+  firstMessage?: string;
+  relationship?: string;
+  advancedPrompt?: string;
+  relatedNPCs?: string;
+  unrelatedNPCs?: string;
+  userProfile?: string;
 }
 
 export interface AppItem {
@@ -36,6 +45,39 @@ export interface ApiPreset {
   model: string;
 }
 
+export interface NovelCategory {
+  id: string;
+  name: string;
+  tags: string[];
+}
+
+export interface NovelPrompt {
+  id: string;
+  content: string;
+  depth: number;
+}
+
+export interface NovelCharacter {
+  name: string;
+  info: string;
+}
+
+export interface Novel {
+  id: string;
+  title: string;
+  cover: string;
+  background: string;
+  categories: NovelCategory[];
+  chapterLength: number;
+  writingStyle: string;
+  customStyle: string;
+  prompts: NovelPrompt[];
+  char1: NovelCharacter;
+  char2: NovelCharacter;
+  plot: string;
+  content: string;
+}
+
 export interface AppState {
   themeColor: string;
   setThemeColor: (color: string) => void;
@@ -51,5 +93,13 @@ export interface AppState {
   addApiPreset: (preset: ApiPreset) => void;
   removeApiPreset: (id: string) => void;
   applyApiPreset: (id: string) => void;
+  novels: Novel[];
+  addNovel: (novel: Novel) => void;
+  updateNovel: (id: string, updates: Partial<Novel>) => void;
+  deleteNovel: (id: string) => void;
+  screen2Bg: string;
+  setScreen2Bg: (bg: string) => void;
+  isSwipingDisabled: boolean;
+  setIsSwipingDisabled: (disabled: boolean) => void;
 }
 

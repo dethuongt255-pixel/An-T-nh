@@ -1,17 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Settings, Save, RefreshCw, BookmarkPlus, Trash2, CheckCircle2 } from 'lucide-react';
 import { useAppContext } from '../context';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 export const Screen4: React.FC = () => {
-  const { themeColor, apiSettings, updateApiSettings, apiPresets, addApiPreset, removeApiPreset, applyApiPreset } = useAppContext();
+  const { themeColor, apiSettings, updateApiSettings, apiPresets, addApiPreset, removeApiPreset, applyApiPreset, setIsSwipingDisabled } = useAppContext();
   const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [isFetching, setIsFetching] = useState(false);
   const [fetchError, setFetchError] = useState('');
-  const [isManualModel, setIsManualModel] = useState(false);
+  const [isManualModel, setIsManualModel] = useLocalStorage('rp_s4_isManualModel', false);
   
   // Preset state
-  const [isSavingPreset, setIsSavingPreset] = useState(false);
-  const [presetName, setPresetName] = useState('');
+  const [isSavingPreset, setIsSavingPreset] = useLocalStorage('rp_s4_isSavingPreset', false);
+  const [presetName, setPresetName] = useLocalStorage('rp_s4_presetName', '');
+
+  useEffect(() => {
+    if (isSavingPreset) {
+      setIsSwipingDisabled(true);
+    } else {
+      setIsSwipingDisabled(false);
+    }
+    return () => setIsSwipingDisabled(false);
+  }, [isSavingPreset, setIsSwipingDisabled]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

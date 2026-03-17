@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { AppState, Character, AppItem, UserProfile, ApiSettings, ApiPreset } from './types';
+import { AppState, Character, AppItem, UserProfile, ApiSettings, ApiPreset, Novel } from './types';
+import { useLocalStorage } from './hooks/useLocalStorage';
 
 const defaultContext: AppState = {
   themeColor: '#f7d7df',
@@ -24,63 +25,28 @@ const defaultContext: AppState = {
   addApiPreset: () => {},
   removeApiPreset: () => {},
   applyApiPreset: () => {},
+  novels: [],
+  addNovel: () => {},
+  updateNovel: () => {},
+  deleteNovel: () => {},
+  screen2Bg: '',
+  setScreen2Bg: () => {},
+  isSwipingDisabled: false,
+  setIsSwipingDisabled: () => {},
 };
 
 const AppContext = createContext<AppState>(defaultContext);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [themeColor, setThemeColor] = useState('#f7d7df');
-  const [characters, setCharacters] = useState<Character[]>([]);
-  const [apps, setApps] = useState<AppItem[]>([]);
-  const [profile, setProfile] = useState<UserProfile>(defaultContext.profile);
-  const [apiSettings, setApiSettings] = useState<ApiSettings>(defaultContext.apiSettings);
-  const [apiPresets, setApiPresets] = useState<ApiPreset[]>([]);
-
-  // Load from local storage
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('rp_themeColor');
-    if (savedTheme) setThemeColor(savedTheme);
-
-    const savedChars = localStorage.getItem('rp_characters');
-    if (savedChars) setCharacters(JSON.parse(savedChars));
-
-    const savedApps = localStorage.getItem('rp_apps');
-    if (savedApps) setApps(JSON.parse(savedApps));
-
-    const savedProfile = localStorage.getItem('rp_profile');
-    if (savedProfile) setProfile(JSON.parse(savedProfile));
-
-    const savedApiSettings = localStorage.getItem('rp_apiSettings');
-    if (savedApiSettings) setApiSettings(JSON.parse(savedApiSettings));
-
-    const savedApiPresets = localStorage.getItem('rp_apiPresets');
-    if (savedApiPresets) setApiPresets(JSON.parse(savedApiPresets));
-  }, []);
-
-  // Save to local storage
-  useEffect(() => {
-    localStorage.setItem('rp_themeColor', themeColor);
-  }, [themeColor]);
-
-  useEffect(() => {
-    localStorage.setItem('rp_characters', JSON.stringify(characters));
-  }, [characters]);
-
-  useEffect(() => {
-    localStorage.setItem('rp_apps', JSON.stringify(apps));
-  }, [apps]);
-
-  useEffect(() => {
-    localStorage.setItem('rp_profile', JSON.stringify(profile));
-  }, [profile]);
-
-  useEffect(() => {
-    localStorage.setItem('rp_apiSettings', JSON.stringify(apiSettings));
-  }, [apiSettings]);
-
-  useEffect(() => {
-    localStorage.setItem('rp_apiPresets', JSON.stringify(apiPresets));
-  }, [apiPresets]);
+  const [themeColor, setThemeColor] = useLocalStorage('rp_themeColor', '#f7d7df');
+  const [characters, setCharacters] = useLocalStorage<Character[]>('rp_characters', []);
+  const [apps, setApps] = useLocalStorage<AppItem[]>('rp_apps', []);
+  const [profile, setProfile] = useLocalStorage<UserProfile>('rp_profile', defaultContext.profile);
+  const [apiSettings, setApiSettings] = useLocalStorage<ApiSettings>('rp_apiSettings', defaultContext.apiSettings);
+  const [apiPresets, setApiPresets] = useLocalStorage<ApiPreset[]>('rp_apiPresets', []);
+  const [novels, setNovels] = useLocalStorage<Novel[]>('rp_novels', []);
+  const [screen2Bg, setScreen2Bg] = useLocalStorage<string>('rp_screen2Bg', '');
+  const [isSwipingDisabled, setIsSwipingDisabled] = useState(false);
 
   const addCharacter = (char: Character) => {
     setCharacters(prev => [char, ...prev]);
@@ -117,6 +83,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const addNovel = (novel: Novel) => {
+    setNovels(prev => [novel, ...prev]);
+  };
+
+  const updateNovel = (id: string, updates: Partial<Novel>) => {
+    setNovels(prev => prev.map(n => n.id === id ? { ...n, ...updates } : n));
+  };
+
+  const deleteNovel = (id: string) => {
+    setNovels(prev => prev.filter(n => n.id !== id));
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -134,6 +112,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addApiPreset,
         removeApiPreset,
         applyApiPreset,
+        novels,
+        addNovel,
+        updateNovel,
+        deleteNovel,
+        screen2Bg,
+        setScreen2Bg,
+        isSwipingDisabled,
+        setIsSwipingDisabled,
       }}
     >
       {children}
