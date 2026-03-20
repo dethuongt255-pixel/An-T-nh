@@ -26,3 +26,8 @@
   }
 }
 
+@keyframes danmaku {
+  from { right: -100%; }
+  to { right: 100%; }
+}
+

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { AppState, Character, AppItem, UserProfile, ApiSettings, ApiPreset, Novel, NPC } from './types';
+import { AppState, Character, AppItem, UserProfile, ApiSettings, ApiPreset, Novel, NPC, Worldbook } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
 
 const defaultContext: AppState = {
@@ -41,6 +41,12 @@ const defaultContext: AppState = {
   setScreen2Bg: () => {},
   isSwipingDisabled: false,
   setIsSwipingDisabled: () => {},
+  worldbooks: [],
+  addWorldbook: () => {},
+  updateWorldbook: () => {},
+  deleteWorldbook: () => {},
+  worldbookBg: '',
+  setWorldbookBg: () => {},
 };
 
 const AppContext = createContext<AppState>(defaultContext);
@@ -55,6 +61,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [novels, setNovels] = useLocalStorage<Novel[]>('rp_novels', []);
   const [npcs, setNpcs] = useLocalStorage<NPC[]>('rp_npcs', []);
   const [screen2Bg, setScreen2Bg] = useLocalStorage<string>('rp_screen2Bg', '');
+  const [worldbooks, setWorldbooks] = useLocalStorage<Worldbook[]>('rp_worldbooks', []);
+  const [worldbookBg, setWorldbookBg] = useLocalStorage<string>('rp_worldbookBg', '');
   const [isSwipingDisabled, setIsSwipingDisabled] = useState(false);
 
   const addCharacter = (char: Character) => {
@@ -132,6 +140,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setNpcs(prev => prev.filter(n => n.id !== id));
   };
 
+  const addWorldbook = (wb: Worldbook) => {
+    setWorldbooks(prev => [wb, ...prev]);
+  };
+
+  const updateWorldbook = (id: string, updates: Partial<Worldbook>) => {
+    setWorldbooks(prev => prev.map(w => w.id === id ? { ...w, ...updates } : w));
+  };
+
+  const deleteWorldbook = (id: string) => {
+    setWorldbooks(prev => prev.filter(w => w.id !== id));
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -165,6 +185,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setScreen2Bg,
         isSwipingDisabled,
         setIsSwipingDisabled,
+        worldbooks,
+        addWorldbook,
+        updateWorldbook,
+        deleteWorldbook,
+        worldbookBg,
+        setWorldbookBg,
       }}
     >
       {children}

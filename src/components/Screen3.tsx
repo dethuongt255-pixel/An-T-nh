@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Plus, X, Image as ImageIcon, Camera, Send, Trash2, ArrowLeft } from 'lucide-react';
 import { useAppContext } from '../context';
 import { AppItem } from '../types';
+import { safeApiCall } from '../utils/api';
 import { compressImage } from '../utils/image';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
@@ -56,28 +57,17 @@ Yêu cầu:
 - JSON phải hợp lệ.`;
 
     try {
-      const baseUrl = apiSettings.endpoint.replace(/\/chat\/completions$/, '').replace(/\/$/, '');
-      const response = await fetch(`${baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiSettings.apiKey}`
-        },
-        body: JSON.stringify({
-          model: apiSettings.model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: prompt }
-          ],
-          temperature: 0.8,
-        })
+      const generatedText = await safeApiCall({
+        endpoint: apiSettings.endpoint,
+        apiKey: apiSettings.apiKey,
+        model: apiSettings.model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.8,
       });
 
-      if (!response.ok) throw new Error('API Error');
-      
-      const data = await response.json();
-      const generatedText = data.choices?.[0]?.message?.content || '';
-      
       const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const profile = JSON.parse(jsonMatch[0]);
@@ -181,25 +171,14 @@ Yêu cầu:
     ];
 
     try {
-      const baseUrl = apiSettings.endpoint.replace(/\/chat\/completions$/, '').replace(/\/$/, '');
-      const response = await fetch(`${baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiSettings.apiKey}`
-        },
-        body: JSON.stringify({
-          model: apiSettings.model,
-          messages: apiMessages,
-          temperature: 0.7,
-        })
+      const generatedText = await safeApiCall({
+        endpoint: apiSettings.endpoint,
+        apiKey: apiSettings.apiKey,
+        model: apiSettings.model,
+        messages: apiMessages,
+        temperature: 0.7,
       });
 
-      if (!response.ok) throw new Error('API Error');
-      
-      const data = await response.json();
-      const generatedText = data.choices?.[0]?.message?.content || '';
-      
       if (generatedText) {
         // Ensure at least 10 seconds delay
         const elapsedTime = Date.now() - startTime;

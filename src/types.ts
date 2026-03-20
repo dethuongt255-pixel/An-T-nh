@@ -131,6 +131,41 @@ export interface Novel {
   memoryLimit: number;
 }
 
+export interface CharacterEvent {
+  id: string;
+  keywords: string;
+  content: string;
+  priority: 'high' | 'normal' | 'low';
+}
+
+export interface Worldbook {
+  id: string;
+  title: string;
+  content: string;
+}
+
+export interface CharacterSetup {
+  promptPreset: string;
+  worldbookId?: string;
+  history: string;
+  relationship: string;
+  systemBeforeAfterLove: string;
+  longNovelMode: boolean;
+  longNovelLength: number;
+  nsfwEnabled: boolean;
+  nsfwRules: string;
+  events: CharacterEvent[];
+  advancedSetup: string;
+  openingScene: string;
+  appBackground: string;
+  osHeaderImage: string;
+  osDividerImage: string;
+  osDockIcons: string[];
+  osAppIcons: Record<string, string>;
+  osAppIconBackgrounds: Record<string, string>;
+  osAppIconSize: number;
+}
+
 export interface NPC {
   id: string;
   name: string;
@@ -143,6 +178,8 @@ export interface NPC {
   time: string;
   badge: number;
   apps?: AppItem[];
+  setup?: CharacterSetup;
+  messages?: { role: 'user' | 'assistant' | 'system', content: string }[];
 }
 
 export interface AppState {
@@ -176,5 +213,11 @@ export interface AppState {
   setScreen2Bg: (bg: string) => void;
   isSwipingDisabled: boolean;
   setIsSwipingDisabled: (disabled: boolean) => void;
+  worldbooks: Worldbook[];
+  addWorldbook: (wb: Worldbook) => void;
+  updateWorldbook: (id: string, updates: Partial<Worldbook>) => void;
+  deleteWorldbook: (id: string) => void;
+  worldbookBg: string;
+  setWorldbookBg: (bg: string) => void;
 }
 
